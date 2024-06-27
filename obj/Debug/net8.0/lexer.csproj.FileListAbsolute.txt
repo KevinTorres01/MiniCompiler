@@ -1,0 +1,14 @@
+/home/kevin/Escritorio/lexer/bin/Debug/net8.0/lexer
+/home/kevin/Escritorio/lexer/bin/Debug/net8.0/lexer.deps.json
+/home/kevin/Escritorio/lexer/bin/Debug/net8.0/lexer.runtimeconfig.json
+/home/kevin/Escritorio/lexer/bin/Debug/net8.0/lexer.dll
+/home/kevin/Escritorio/lexer/bin/Debug/net8.0/lexer.pdb
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/lexer.GeneratedMSBuildEditorConfig.editorconfig
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/lexer.AssemblyInfoInputs.cache
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/lexer.AssemblyInfo.cs
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/lexer.csproj.CoreCompileInputs.cache
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/lexer.dll
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/refint/lexer.dll
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/lexer.pdb
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/lexer.genruntimeconfig.cache
+/home/kevin/Escritorio/lexer/obj/Debug/net8.0/ref/lexer.dll
