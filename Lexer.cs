@@ -4,7 +4,7 @@ public class Token
 {
     public TokenType Type;
     public string Value;
-    Location location;
+    public Location location;
 
     public Token(TokenType type, string value, Location loc)
     {
@@ -17,6 +17,7 @@ public class Token
     {
         { TokenType.NUMS, @"^\d+(\.\d+)?\b" },
         { TokenType.COMMA, "^\\," },
+        { TokenType.ENDER, "^\\;" },
         { TokenType.BOOLEANS, "^true|^false" },
         { TokenType.INCREMENT,"^\\+\\+"},
         { TokenType.DECREMENT,"^\\--"},
@@ -41,11 +42,23 @@ public class Token
         { TokenType.RIGHTBRAKETS, "^\\]" },
         { TokenType.LEFTBRACES, "^\\{" },
         { TokenType.RIGHTBRACES, "^\\}" },
-        { TokenType.KEYWORD, "^effect$?(?![a-zA-Z0-9])|^card$?(?![a-zA-Z0-9])|^Name$?(?![a-zA-Z0-9])|^while$?(?![a-zA-Z0-9])|^for$?(?![a-zA-Z0-9])|^in$?(?![a-zA-Z0-9])|^String$?(?![a-zA-Z0-9])|^Params$?(?![a-zA-Z0-9])|^Number$?(?![a-zA-Z0-9])|^Bool$?(?![a-zA-Z0-9])|^Action$?|^Type$?(?![a-zA-Z0-9])|^Faction$?(?![a-zA-Z0-9])|^Power$?(?![a-zA-Z0-9])|^Range$?(?![a-zA-Z0-9])|^OnActivation$?(?![a-zA-Z0-9])|^Effect$?(?![a-zA-Z0-9])|^Selector$?(?![a-zA-Z0-9])|^Source$?(?![a-zA-Z0-9])|^Single$?(?![a-zA-Z0-9])|^Predicate$?(?![a-zA-Z0-9])|^PostAction$(?![a-zA-Z0-9])" },
+        { TokenType.CARD,"^Card$?(?![a-zA-Z0-9])"},
+        { TokenType.EFFECT,"^effect$?(?![a-zA-Z0-9])"},
+        { TokenType.NUMBER,"^Number$?(?![a-zA-Z0-9])"},
+        { TokenType.BOOL,"^Bool$?(?![a-zA-Z0-9])"},
+        { TokenType.STRINGKEYWORD,"^String$?(?![a-zA-Z0-9])"},
+        { TokenType.IFKEYWORD,"^if$?(?![a-zA-Z0-9])"},
+        { TokenType.ELSEKEYWORD,"^else$?(?![a-zA-Z0-9])"},
+        { TokenType.FORKEYWORD,"^for$?(?![a-zA-Z0-9])"},
+        { TokenType.WHILEKEYEORD,"^while$?(?![a-zA-Z0-9])"},
+        { TokenType.PRINTKEYWORD,"^print$?(?![a-zA-Z0-9])"},
+        { TokenType.INKEYWORD,"^in$?(?![a-zA-Z0-9])"},
+        { TokenType.KEYWORD, "^effect$?(?![a-zA-Z0-9])|^card$?(?![a-zA-Z0-9])|^in$?(?![a-zA-Z0-9])|^String$?(?![a-zA-Z0-9])|^Number$?(?![a-zA-Z0-9])|^Bool$?(?![a-zA-Z0-9])|^Type$?(?![a-zA-Z0-9])|^Faction$?(?![a-zA-Z0-9])|^Power$?(?![a-zA-Z0-9])|^Range$?(?![a-zA-Z0-9])|^OnActivation$?(?![a-zA-Z0-9])|^Effect$?(?![a-zA-Z0-9])|^Selector$?(?![a-zA-Z0-9])|^Source$?(?![a-zA-Z0-9])|^Single$?(?![a-zA-Z0-9])|^Predicate$?(?![a-zA-Z0-9])|^PostAction$(?![a-zA-Z0-9])" },
         { TokenType.IDENTIFIER, "^([a-zA-Z_]\\w*)" },
         { TokenType.POTENCIATION, "^\\^"},
         { TokenType.SPLITER, "^\\:"},
         { TokenType.SPACES,"^\\s+"},
+        { TokenType.DOT,"^\\."}
 
     };
 
@@ -56,9 +69,11 @@ public enum TokenType
     GREATER, STRING, NUMS, LEFTPARENT, RIGHTPARENT,
     EQUALS, LEFTBRAKETS, RIGHTBRAKETS, LEFTBRACES, RIGHTBRACES,
     IDENTIFIER, SPACES, COMMA, ASIGNMENT, CONCATWHITHSPACE,
-    CONCATWHITHOUTSPACE, GREATEREQUALS, LESSEQUALS, KEYWORD,
-    INCREMENT, DECREMENT, POTENCIATION, BOOLEANS, SPLITER
-
+    CONCATWHITHOUTSPACE, GREATEREQUALS, LESSEQUALS, IFKEYWORD,
+    FORKEYWORD, WHILEKEYEORD, ELSEKEYWORD, PRINTKEYWORD, KEYWORD,
+    INCREMENT, DECREMENT, POTENCIATION, BOOLEANS, SPLITER, ENDER,
+    DOT, CARD, NAME, POWER, TYPE, FACTION, RANGE, OnActivation, EFFECT,
+    INKEYWORD, BOOL, NUMBER, STRINGKEYWORD, PARAMS
 }
 public class Location
 {
@@ -153,8 +168,17 @@ public class Lexer
                         Match = match.Success;
                         break;
                     }
-                    Token token1 = new Token(token.Key, match.Groups[0].Value, new Location(row + 1, index + 1));
-                    Tokens.Add(token1);
+                    Token Matched;
+                    if (token.Key == TokenType.STRING)
+                    {
+                        Matched = new Token(token.Key, match.Groups[0].Value.Substring(1, match.Groups[0].Value.Length - 2), new Location(row + 1, index + 1));
+                    }
+                    else
+                    {
+                        Matched = new Token(token.Key, match.Groups[0].Value, new Location(row + 1, index + 1));
+
+                    }
+                    Tokens.Add(Matched);
                     Match = match.Success;
                     index += match.Length;
                     break;
@@ -179,14 +203,21 @@ public class Lexer
     }
     static void Main()
     {
-        string s = GetFileContent(@"/home/kevin/Documentos/TXT/Documento sin título 1");
+        string s = GetFileContent(@"/home/kevin/Escritorio/MiniCompiler/Grammar.txt");
         List<Token> tokens = new List<Token>();
         Lexer a = new Lexer();
         tokens = a.Tokenizer(s);
         a.FixErrors();
-        foreach (var item in tokens)
+        Parser b = new Parser(tokens);
+        var x = new Enviroment();
+        List<IProgramNode> statements = b.Program(x);
+        foreach (var item in statements)
         {
-            System.Console.WriteLine(item.Type);
+            item.Create();
+        }
+        foreach (var item in b.context.effects)
+        {
+            b.context.effects[item.Key].action.Invoke(-3d,1d);
         }
     }
 }

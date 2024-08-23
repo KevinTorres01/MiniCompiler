@@ -1,0 +1,14 @@
+  effect {
+   Name : "Beluga",
+      Action : (targets,context) => { while(targets<0)
+      {
+         print targets;
+         targets++;
+      }
+                                                    } ,
+      }
+ 
+ 
+
+
+ 
