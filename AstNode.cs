@@ -13,13 +13,16 @@ public class CompiledCard
     string Type;
     string Faction;
     string Range;
-    public CompiledCard(string name, double power, string type, string faction, string range)
+    public List<OnActivationObject> onActivations = new List<OnActivationObject>();
+    public CompiledCard(string name, double power, string type, string faction, string range, List<OnActivationObject> onActivations)
     {
         Name = name;
         Power = power;
         Type = type;
         Faction = faction;
         Range = range;
+        this.onActivations = onActivations;
+
     }
     public override string ToString()
     {
@@ -29,7 +32,7 @@ public class CompiledCard
 public class CompiledEffect
 {
     public string Name;
-    List<Params> Params;
+    public List<Params> Params;
     public Action action;
     public CompiledEffect(string name, List<Params> Params, Action action)
     {

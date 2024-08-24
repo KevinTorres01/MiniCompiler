@@ -36,9 +36,9 @@ public class BinaryExpression : IExpression
             case TokenType.GREATEREQUALS:
                 return (double)left.Evaluate() >= (double)right.Evaluate();
             case TokenType.GREATER:
-                return (double)left.Evaluate() > (double)right.Evaluate();
+                return Convert.ToDouble(left.Evaluate()) > Convert.ToDouble(right.Evaluate());
             case TokenType.LESS:
-                return (double)left.Evaluate() < (double)right.Evaluate();
+                return Convert.ToDouble(left.Evaluate()) < Convert.ToDouble(right.Evaluate());
             case TokenType.LESSEQUALS:
                 return (double)left.Evaluate() <= (double)right.Evaluate();
             case TokenType.EQUALS:
@@ -173,7 +173,7 @@ public class PropertySet : IExpression
             var e = p.exp.Evaluate();
             if (e is List<object> list)
             {
-                switch (p.NameOfMethod)
+                switch (p.NameOfPropery)
                 {
                     case "Indexer":
                         list[int.Parse(p.args[0].Evaluate().ToString())] = value.Evaluate();
@@ -260,12 +260,12 @@ public class ActionExpression : IExpression
 public class GetProperties : IExpression
 {
     public IExpression exp;
-    public string NameOfMethod;
+    public string NameOfPropery;
     public List<IExpression> args;
     public GetProperties(IExpression left, string name, List<IExpression> args)
     {
         exp = left;
-        NameOfMethod = name;
+        NameOfPropery = name;
         this.args = args;
     }
     public object Evaluate()
@@ -274,7 +274,7 @@ public class GetProperties : IExpression
 
         if (x is List<object> list)
         {
-            switch (NameOfMethod)
+            switch (NameOfPropery)
             {
                 case "Count":
                     return list.Count;
@@ -284,6 +284,53 @@ public class GetProperties : IExpression
             }
         }
         throw new Exception();
+    }
+}
+public class DelegateExpression : IExpression
+{
+    List<Token> Identifiers;
+    IExpression expression;
+    Enviroment enviroment;
+    public DelegateExpression(IExpression expression, List<Token> tokens, Enviroment Parent)
+    {
+        this.expression = expression;
+        Identifiers = tokens;
+        enviroment = Parent;
+
+    }
+
+    public object Evaluate()
+    {
+        return new Delegate(Identifiers, expression, enviroment);
+    }
+}
+
+public class Delegate
+{
+    public List<Token> Identifiers { get; }
+    public IExpression Expression { get; }
+    public Enviroment Parent;
+    public Delegate(List<Token> identifiers, IExpression expression, Enviroment Parent)
+    {
+        Identifiers = identifiers;
+        Expression = expression;
+        this.Parent = Parent;
+    }
+
+    public object Invoke(params object[] args)
+    {
+        if (args.Length == Identifiers.Count)
+        {
+            for (int i = 0; i < Identifiers.Count; i++)
+            {
+                Parent.SetValue(Identifiers[i].Value, args[i]);
+            }
+            return Expression.Evaluate();
+        }
+        else
+        {
+            throw new Exception();
+        }
     }
 }
 

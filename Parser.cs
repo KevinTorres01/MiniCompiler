@@ -105,20 +105,36 @@ public class Parser
                 if (Previus().Value == "Params")
                 {
                     param = Param();
-                    Consume(TokenType.COMMA);
+                    if (CurrentToken.Type == TokenType.COMMA)
+                    {
+                        Consume(TokenType.COMMA);
+                    }
+                    else
+                    {
+                        Consume(TokenType.RIGHTBRACES);
+                    }
+
                 }
                 else if (Previus().Value == "Name")
                 {
                     Consume(TokenType.SPLITER);
                     name = Expression(Parent);
-                    Consume(TokenType.COMMA);
+                    if (CurrentToken.Type == TokenType.COMMA)
+                    {
+                        Consume(TokenType.COMMA);
+                    }
+
                 }
                 else if (Previus().Value == "Action")
                 {
 
                     Consume(TokenType.SPLITER);
                     action = Expression(Parent);
-                    Consume(TokenType.COMMA);
+                    if (CurrentToken.Type == TokenType.COMMA)
+                    {
+                        Consume(TokenType.COMMA);
+                    }
+
                 }
                 else
                 {
@@ -139,7 +155,15 @@ public class Parser
             if (Match(TokenType.NUMBER, TokenType.BOOL, TokenType.STRINGKEYWORD))
             {
                 param.Add(new Params(name, Previus().Type));
-                Consume(TokenType.COMMA);
+                if (CurrentToken.Type == TokenType.COMMA)
+                {
+                    Consume(TokenType.COMMA);
+
+                }
+                else
+                {
+                    break;
+                }
             }
             else
             {
@@ -147,6 +171,96 @@ public class Parser
             }
         }
         return param;
+    }
+
+    public OnActivationObjectExpression ParseOnActivation(Enviroment Parent, Context context)
+    {
+
+        EffectInfoExpression effectInfo = null;
+        SelectorExpression selector = null;
+        OnActivationObjectExpression postAction = null;
+        IExpression predicate = null;
+        while (Match(TokenType.IDENTIFIER))
+        {
+            if (Previus().Value == "Effect")
+            {
+                Consume(TokenType.SPLITER);
+                Consume(TokenType.LEFTBRACES);
+
+                Consume(TokenType.IDENTIFIER);
+                Consume(TokenType.SPLITER);
+                var e = Expression(Parent);
+                Consume(TokenType.COMMA);
+
+                var paramsValues = ParamsAssign(Parent);
+                effectInfo = new EffectInfoExpression(paramsValues, e, context);
+                Consume(TokenType.RIGHTBRACES);
+                if (CurrentToken.Type == TokenType.COMMA)
+                {
+                    Consume(TokenType.COMMA);
+                }
+            }
+            else if (Previus().Value == "Selector")
+            {
+                Consume(TokenType.SPLITER);
+                Consume(TokenType.LEFTBRACES);
+                IExpression sour = null;
+                IExpression sing = null;
+                while (Match(TokenType.IDENTIFIER))
+                {
+                    if (Previus().Value == "Source")
+                    {
+                        Consume(TokenType.SPLITER);
+                        sour = Expression(Parent);
+                        if (CurrentToken.Type == TokenType.COMMA)
+                        {
+                            Consume(TokenType.COMMA);
+                        }
+                    }
+                    else if (Previus().Value == "Single")
+                    {
+                        Consume(TokenType.SPLITER);
+                        sing = Expression(Parent);
+                        if (CurrentToken.Type == TokenType.COMMA)
+                        {
+                            Consume(TokenType.COMMA);
+                        }
+                    }
+                    else if (Previus().Value == "Predicate")
+                    {
+                        Consume(TokenType.SPLITER);
+                        predicate = Expression(Parent);
+
+                        if (CurrentToken.Type == TokenType.COMMA)
+                        {
+                            Consume(TokenType.COMMA);
+                        }
+
+                    }
+                    else
+                        throw new Exception();
+                }
+                Consume(TokenType.RIGHTBRACES);
+                selector = new SelectorExpression(sour, sing, predicate);
+                if (CurrentToken.Type == TokenType.COMMA)
+                {
+                    Consume(TokenType.COMMA);
+                }
+
+            }
+            else if (Previus().Value == "PostAction")
+            {
+                Consume(TokenType.SPLITER);
+                Consume(TokenType.LEFTBRACES);
+                postAction = ParseOnActivation(Parent, context);
+                Consume(TokenType.RIGHTBRACES);
+            }
+            else
+            {
+                throw new Exception();
+            }
+        }
+        return new OnActivationObjectExpression(effectInfo, selector, postAction);
     }
     public IProgramNode Card(Enviroment Parent)
     {
@@ -156,6 +270,7 @@ public class Parser
         IExpression faction = null;
         IExpression type = null;
         IExpression range = null;
+        List<OnActivationObjectExpression> onActivationDeclarations = new List<OnActivationObjectExpression>();
         while (!Match(TokenType.RIGHTBRACES))
         {
             if (Match(TokenType.IDENTIFIER))
@@ -182,7 +297,6 @@ public class Parser
                 }
                 else if (Previus().Value == "Faction")
                 {
-
                     Consume(TokenType.SPLITER);
                     faction = Expression(Parent);
                     Consume(TokenType.COMMA);
@@ -193,17 +307,33 @@ public class Parser
                     range = Expression(Parent);
                     Consume(TokenType.COMMA);
                 }
-            }
-            else if (Match(TokenType.OnActivation))
-            {
+                else if (Previus().Value == "OnActivation")
+                {
+                    Consume(TokenType.SPLITER);
+                    Consume(TokenType.LEFTBRAKETS);
+                    while (Match(TokenType.LEFTBRACES))
+                    {
+                        onActivationDeclarations.Add(ParseOnActivation(Parent, context));
+                        Consume(TokenType.RIGHTBRACES);
+                        if (CurrentToken.Type == TokenType.COMMA)
+                        {
+                            Consume(TokenType.COMMA);
+                        }
+                    }
+                    Consume(TokenType.RIGHTBRAKETS);
 
+                }
+                else
+                {
+                    throw new Exception("");
+                }
             }
             else
             {
                 throw new Exception("");
             }
         }
-        return new CardDeclaration(name, power, type, range, faction, context);
+        return new CardDeclaration(name, power, type, range, faction, context, onActivationDeclarations);
 
     }
     public IStatements Statement(Enviroment Parent)
@@ -252,7 +382,7 @@ public class Parser
         {
             Consume(TokenType.LEFTBRACES);
             ifStmt.ElseStatements = List(Parent);
-            
+
         }
         return ifStmt;
     }
@@ -288,6 +418,26 @@ public class Parser
         IExpression expression = Assignment(Parent);
         Consume(TokenType.ENDER);
         return new ExpStms(expression);
+    }
+    Dictionary<string, IExpression> ParamsAssign(Enviroment Parent)
+    {
+        Dictionary<string, IExpression> list = new Dictionary<string, IExpression>();
+
+        while (Match(TokenType.IDENTIFIER))
+        {
+            string name = Previus().Value;
+            Consume(TokenType.SPLITER);
+            list.Add(name, Expression(Parent));
+            if (CurrentToken.Type == TokenType.COMMA)
+            {
+                Consume(TokenType.COMMA);
+            }
+            else
+            {
+                break;
+            }
+        }
+        return list;
     }
     List<IStatements> Parse(Enviroment Parent)
     {
@@ -504,11 +654,17 @@ public class Parser
                     {
                         throw new Exception();
                     }
-                    if (tokens[i + 1].Type == TokenType.GREATER)
+                    if (i + 2 < tokens.Count && tokens[i + 1].Type == TokenType.GREATER && tokens[i + 2].Type == TokenType.LEFTBRACES)
                     {
                         return ActionExpression(Parent);
                     }
+                    else if (tokens[i + 1].Type == TokenType.GREATER)
+                    {
+                        return ParseDelegateExpression(Parent);
+                    }
+
                 }
+
             }
             Consume(TokenType.LEFTPARENT);
             IExpression expression = Expression(Parent);
@@ -528,4 +684,26 @@ public class Parser
         throw new Exception();
     }
 
+    private IExpression ParseDelegateExpression(Enviroment Parent)
+    {
+        Consume(TokenType.LEFTPARENT);
+        List<Token> tokens = new List<Token>();
+        while (Match(TokenType.IDENTIFIER))
+        {
+            tokens.Add(Previus());
+            if (CurrentToken.Type == TokenType.COMMA)
+            {
+                Consume(TokenType.COMMA);
+            }
+            else
+            {
+                break;
+            }
+        }
+        Consume(TokenType.RIGHTPARENT);
+        Consume(TokenType.ASIGNMENT);
+        Consume(TokenType.GREATER);
+        IExpression expression = Expression(Parent);
+        return new DelegateExpression(expression, tokens, Parent);
+    }
 }

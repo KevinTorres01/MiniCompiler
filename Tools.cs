@@ -1,7 +1,7 @@
 public class Params
 {
-    string Name;
-    TokenType type;
+    public string Name;
+    public TokenType type;
     public Params(string name, TokenType tokenType)
     {
         Name = name;

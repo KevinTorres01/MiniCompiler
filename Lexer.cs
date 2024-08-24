@@ -53,7 +53,7 @@ public class Token
         { TokenType.WHILEKEYEORD,"^while$?(?![a-zA-Z0-9])"},
         { TokenType.PRINTKEYWORD,"^print$?(?![a-zA-Z0-9])"},
         { TokenType.INKEYWORD,"^in$?(?![a-zA-Z0-9])"},
-        { TokenType.KEYWORD, "^effect$?(?![a-zA-Z0-9])|^card$?(?![a-zA-Z0-9])|^in$?(?![a-zA-Z0-9])|^String$?(?![a-zA-Z0-9])|^Number$?(?![a-zA-Z0-9])|^Bool$?(?![a-zA-Z0-9])|^Type$?(?![a-zA-Z0-9])|^Faction$?(?![a-zA-Z0-9])|^Power$?(?![a-zA-Z0-9])|^Range$?(?![a-zA-Z0-9])|^OnActivation$?(?![a-zA-Z0-9])|^Effect$?(?![a-zA-Z0-9])|^Selector$?(?![a-zA-Z0-9])|^Source$?(?![a-zA-Z0-9])|^Single$?(?![a-zA-Z0-9])|^Predicate$?(?![a-zA-Z0-9])|^PostAction$(?![a-zA-Z0-9])" },
+        { TokenType.KEYWORD, "^in$?(?![a-zA-Z0-9])" },
         { TokenType.IDENTIFIER, "^([a-zA-Z_]\\w*)" },
         { TokenType.POTENCIATION, "^\\^"},
         { TokenType.SPLITER, "^\\:"},
@@ -215,9 +215,10 @@ public class Lexer
         {
             item.Create();
         }
-        foreach (var item in b.context.effects)
+        foreach (var item in b.context.cards)
         {
-            b.context.effects[item.Key].action.Invoke(-3d,1d);
+            System.Console.WriteLine(item);
+            b.context.effects[item.Key].action.Invoke();
         }
     }
 }

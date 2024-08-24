@@ -1,12 +1,53 @@
-  effect {
-   Name : "Beluga",
-      Action : (targets,context) => { while(targets<0)
+ effect
+ {
+     Name : "Damage",
+     Params 
+     {
+      Ammount : Number,
+      Puta : String
+     }
+     Action : () => {print "Puta";
+     }
+ }
+ 
+ Card {
+  Name : "Beluga",
+  Type : "Golden",
+  Faction : "Cristian gay",
+  Power : 2,
+  Range : "M",
+  OnActivation:[
+  {
+      Effect:
       {
-         print targets;
-         targets++;
+        Name:"Damage",
+        Ammount:5, Puta:"Alina"
+      },
+      Selector : 
+      {
+        Source : "board",
+        Single : false ,
+        Predicate : (x) => true 
+      },
+      PostAction :
+      {
+          Effect:
+      {
+        Name:"Damage",
+        Ammount:5, Puta:"Alina"
+      },
+      Selector : 
+      {
+        Source : "board",
+        Single : false ,
+        Predicate : (x) => true
       }
+      } 
+  }
+  ]
+
                                                     } ,
-      }
+      
  
  
 

@@ -88,7 +88,6 @@ public class ForStms : IStatements
                     item.Execute();
                 }
             }
-
         }
     }
 }
